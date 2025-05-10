@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"; // For the close button
 import { ScrollArea } from "@/components/ui/scroll-area"; // To make content scrollable
 import type { SalaryRecord } from "@/types";
-import { SalarySlipTemplate } from '@/lib/pdfGenerator'; 
+import { SalarySlipTemplate } from '@/lib/SalarySlipTemplate';
 import { X } from 'lucide-react';
 
 
