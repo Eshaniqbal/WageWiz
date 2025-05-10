@@ -5,6 +5,7 @@ import AppHeader from '@/components/AppHeader';
 import WorkerSalaryDialog from '@/components/WorkerSalaryDialog';
 import SalaryTable from '@/components/SalaryTable';
 import PreviewSlipDialog from '@/components/PreviewSlipDialog';
+import Dashboard from '@/components/Dashboard';
 import type { SalaryRecord } from '@/types';
 import {
   getSalaryRecords as getRecordsFromLocal,
@@ -133,23 +134,28 @@ export default function WageWizClient() {
             <p className="ml-4 text-lg text-muted-foreground">Loading salary data...</p>
           </div>
         ) : (
-          <Card className="shadow-2xl rounded-xl overflow-hidden border-border">
-            <CardHeader className="bg-muted/30 border-b border-border">
-              <CardTitle className="text-2xl font-bold text-accent">Salary Ledger</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Manage and view all employee salary records.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <SalaryTable
-                records={salaryRecords}
-                onEdit={handleOpenSalaryDialog}
-                onDelete={handleDeleteRecord}
-                onDownloadSlip={handleGeneratePDF}
-                onPreviewSlip={handleOpenPreviewSlipDialog}
-              />
-            </CardContent>
-          </Card>
+          <>
+            <Card className="shadow-2xl rounded-xl overflow-hidden border-border">
+              <CardHeader className="bg-muted/30 border-b border-border">
+                <CardTitle className="text-2xl font-bold text-accent">Salary Ledger</CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Manage and view all employee salary records.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <SalaryTable
+                  records={salaryRecords}
+                  onEdit={handleOpenSalaryDialog}
+                  onDelete={handleDeleteRecord}
+                  onDownloadSlip={handleGeneratePDF}
+                  onPreviewSlip={handleOpenPreviewSlipDialog}
+                />
+              </CardContent>
+            </Card>
+            <div className="mt-6">
+              <Dashboard records={salaryRecords} />
+            </div>
+          </>
         )}
       </main>
       <WorkerSalaryDialog

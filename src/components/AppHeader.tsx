@@ -18,18 +18,18 @@ const AppHeader: FC<AppHeaderProps> = ({ onAddEntry }) => {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-crimson" />
             <Input placeholder="Search records..." className="pl-8 text-crimson placeholder:text-crimson/70" />
           </div>
-          <Button className="text-crimson border-crimson hover:bg-crimson/10" variant="ghost">
+          <Button className="text-crimson border-crimson hover:bg-crimson hover:text-white transition-colors duration-200" variant="ghost">
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button className="text-crimson border-crimson hover:bg-crimson/10" variant="outline">
+          <Button className="text-crimson border-crimson hover:bg-crimson hover:text-white transition-colors duration-200" variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
         <Button 
           onClick={onAddEntry} 
-          className="bg-[#DC143C] text-white hover:bg-[#DC143C]/90 font-semibold"
+          className="bg-[#DC143C] text-white hover:bg-[#DC143C]/80 transition-colors duration-200 font-semibold"
         >
           <PlusCircle className="mr-2 h-5 w-5" /> Add Salary Entry
         </Button>

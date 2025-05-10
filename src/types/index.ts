@@ -10,6 +10,7 @@ export interface SalaryRecord {
   id: string; // UUID for the salary record
   workerId: string;
   workerName: string;
+  phoneNumber: string;
   department: string;
   joiningDate: string; // YYYY-MM-DD
   salaryMonthYear: string; // YYYY-MM

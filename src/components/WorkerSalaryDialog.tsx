@@ -21,13 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, IndianRupee, User, Users, MinusCircle, PlusCircle } from "lucide-react"; // Removed Briefcase
+import { CalendarIcon, IndianRupee, User, Users, MinusCircle, PlusCircle, Phone } from "lucide-react"; // Removed Briefcase
 import { cn } from "@/lib/utils";
 import type { SalaryRecord } from "@/types";
 
 type FormData = {
-  workerId: string;
   workerName: string;
+  phoneNumber: string;
   joiningDate: Date;
   salaryMonthYear: string;
   basicSalary: number;
@@ -36,8 +36,8 @@ type FormData = {
 };
 
 const formSchema = z.object({
-  workerId: z.string().min(1, 'Worker ID is required'),
   workerName: z.string().min(1, 'Worker name is required'),
+  phoneNumber: z.string().min(10, 'Phone number must be at least 10 digits').regex(/^\d+$/, 'Phone number must contain only digits'),
   joiningDate: z.date({
     required_error: 'Joining date is required',
   }),
@@ -59,8 +59,8 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
     resolver: zodResolver(formSchema),
     defaultValues: existingRecord
       ? {
-          workerId: existingRecord.workerId,
           workerName: existingRecord.workerName,
+          phoneNumber: existingRecord.phoneNumber || '',
           joiningDate: new Date(existingRecord.joiningDate),
           salaryMonthYear: existingRecord.salaryMonthYear,
           basicSalary: Number(existingRecord.basicSalary),
@@ -68,8 +68,8 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
           pendingBalance: Number(existingRecord.pendingBalance || 0),
         }
       : {
-          workerId: "",
           workerName: "",
+          phoneNumber: "",
           joiningDate: undefined,
           salaryMonthYear: format(new Date(), 'yyyy-MM'),
           basicSalary: 0,
@@ -92,8 +92,8 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
             pendingBalance: Number(existingRecord.pendingBalance || 0),
           }
         : {
-            workerId: "",
             workerName: "",
+            phoneNumber: "",
             joiningDate: undefined,
             salaryMonthYear: format(new Date(), 'yyyy-MM'),
             basicSalary: 0,
@@ -106,10 +106,12 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
 
   const onSubmit = (data: FormData) => {
     const now = new Date().toISOString();
+    const workerId = existingRecord?.workerId || `EMP${Math.floor(1000 + Math.random() * 9000)}`;
     const recordToSave: SalaryRecord = {
       id: existingRecord?.id || uuidv4(),
-      workerId: data.workerId,
+      workerId,
       workerName: data.workerName,
+      phoneNumber: data.phoneNumber,
       department: 'General', // Default department
       joiningDate: format(data.joiningDate, 'yyyy-MM-dd'),
       salaryMonthYear: format(data.salaryMonthYear, 'yyyy-MM'),
@@ -137,14 +139,14 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="workerId"><Users className="inline-block mr-1 h-4 w-4" />Worker ID</Label>
-              <Input id="workerId" {...register("workerId")} className="mt-1" placeholder="e.g., EMP001" />
-              {errors.workerId && <p className="text-sm text-destructive mt-1">{errors.workerId.message}</p>}
-            </div>
-            <div>
               <Label htmlFor="workerName"><User className="inline-block mr-1 h-4 w-4" />Worker Name</Label>
               <Input id="workerName" {...register("workerName")} className="mt-1" placeholder="e.g., John Doe" />
               {errors.workerName && <p className="text-sm text-destructive mt-1">{errors.workerName.message}</p>}
+            </div>
+            <div>
+              <Label htmlFor="phoneNumber"><Phone className="inline-block mr-1 h-4 w-4" />Phone Number</Label>
+              <Input id="phoneNumber" {...register("phoneNumber")} className="mt-1" placeholder="e.g., 9876543210" />
+              {errors.phoneNumber && <p className="text-sm text-destructive mt-1">{errors.phoneNumber.message}</p>}
             </div>
           </div>
 
