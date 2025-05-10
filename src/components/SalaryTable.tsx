@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SalaryRecord } from "@/types";
+import { format } from 'date-fns';
 
 interface SalaryTableProps {
   records: SalaryRecord[];

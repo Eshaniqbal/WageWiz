@@ -1,37 +1,38 @@
 import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 import type { SalaryRecord } from '@/types';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
-}
-
-const uri = process.env.MONGODB_URI;
-const options = {
-  maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000,
-};
-
-let client: MongoClient;
-let clientPromise: Promise<MongoClient>;
-
-if (process.env.NODE_ENV === 'development') {
-  let globalWithMongo = global as typeof globalThis & {
-    _mongoClientPromise?: Promise<MongoClient>;
+async function getCollection() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('Please add your Mongo URI to .env.local');
+  }
+  const options: MongoClientOptions = {
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    family: 4,
+    authSource: 'admin',
+    retryWrites: true
   };
 
-  if (!globalWithMongo._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    globalWithMongo._mongoClientPromise = client.connect();
-  }
-  clientPromise = globalWithMongo._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
+  let client: MongoClient;
+  let clientPromise: Promise<MongoClient>;
 
-async function getCollection() {
+  if (process.env.NODE_ENV === 'development') {
+    let globalWithMongo = global as typeof globalThis & {
+      _mongoClientPromise?: Promise<MongoClient>;
+    };
+    if (!globalWithMongo._mongoClientPromise) {
+      client = new MongoClient(uri, options);
+      globalWithMongo._mongoClientPromise = client.connect();
+    }
+    clientPromise = globalWithMongo._mongoClientPromise;
+  } else {
+    client = new MongoClient(uri, options);
+    clientPromise = client.connect();
+  }
+
   try {
     const client = await clientPromise;
     const db = client.db('wagewiz');
@@ -60,13 +61,11 @@ export async function POST(request: Request) {
   try {
     const record: SalaryRecord = await request.json();
     const collection = await getCollection();
-    
     await collection.updateOne(
       { id: record.id },
       { $set: record },
       { upsert: true }
     );
-    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error syncing record:', error);
@@ -81,7 +80,6 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
     const collection = await getCollection();
-    
     const result = await collection.deleteOne({ id });
     return NextResponse.json({ success: result.deletedCount > 0 });
   } catch (error) {

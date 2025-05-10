@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { FC } from 'react';
@@ -26,18 +25,29 @@ import { CalendarIcon, IndianRupee, User, Users, MinusCircle, PlusCircle } from 
 import { cn } from "@/lib/utils";
 import type { SalaryRecord } from "@/types";
 
-const formSchema = z.object({
-  workerId: z.string().min(1, "Worker ID is required"),
-  workerName: z.string().min(1, "Worker Name is required"),
-  // department: z.string().min(1, "Department is required"), // Removed department
-  joiningDate: z.date({ required_error: "Joining Date is required." }),
-  salaryMonthYear: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Salary Month/Year must be YYYY-MM format"),
-  basicSalary: z.coerce.number().positive("Basic Salary must be a positive number"),
-  advancePayment: z.coerce.number().min(0, "Advance Payment cannot be negative").optional().default(0),
-  pendingBalance: z.coerce.number().min(0, "Pending Balance cannot be negative").optional().default(0),
-});
+type FormData = {
+  workerId: string;
+  workerName: string;
+  department: string;
+  joiningDate: Date;
+  salaryMonthYear: string;
+  basicSalary: number;
+  advancePayment: number;
+  pendingBalance: number;
+};
 
-type FormData = z.infer<typeof formSchema>;
+const formSchema = z.object({
+  workerId: z.string().min(1, 'Worker ID is required'),
+  workerName: z.string().min(1, 'Worker name is required'),
+  department: z.string().min(1, 'Department is required'),
+  joiningDate: z.date({
+    required_error: 'Joining date is required',
+  }),
+  salaryMonthYear: z.string().min(1, 'Salary month/year is required'),
+  basicSalary: z.number().min(0, 'Basic salary must be positive'),
+  advancePayment: z.number().min(0, 'Advance payment must be positive'),
+  pendingBalance: z.number().min(0, 'Pending balance must be positive'),
+});
 
 interface WorkerSalaryDialogProps {
   isOpen: boolean;
@@ -61,7 +71,7 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
       : {
           workerId: "",
           workerName: "",
-          // department: "", // Removed department
+          department: "",
           joiningDate: undefined,
           salaryMonthYear: format(new Date(), 'yyyy-MM'), // Default to current month
           basicSalary: 0,
@@ -86,7 +96,7 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
         : {
             workerId: "",
             workerName: "",
-            // department: "", // Removed department
+            department: "",
             joiningDate: undefined,
             salaryMonthYear: format(new Date(), 'yyyy-MM'),
             basicSalary: 0,
@@ -101,15 +111,16 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
     const now = new Date().toISOString();
     const recordToSave: SalaryRecord = {
       id: existingRecord?.id || uuidv4(),
-      ...data, // Data will not include department as it's removed from formSchema
+      workerId: data.workerId,
+      workerName: data.workerName,
+      department: data.department,
       joiningDate: format(data.joiningDate, 'yyyy-MM-dd'),
-      basicSalary: Number(data.basicSalary),
-      advancePayment: Number(data.advancePayment || 0),
-      pendingBalance: Number(data.pendingBalance || 0),
+      salaryMonthYear: format(data.salaryMonthYear, 'yyyy-MM'),
+      basicSalary: data.basicSalary,
+      advancePayment: data.advancePayment,
+      pendingBalance: data.pendingBalance,
       createdAt: existingRecord?.createdAt || now,
       updatedAt: now,
-      // If existingRecord had a department, and we want to preserve it when editing:
-      ...(existingRecord && existingRecord.department && { department: existingRecord.department }),
     };
     onSave(recordToSave);
     onClose();
@@ -140,14 +151,11 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
             </div>
           </div>
           
-          {/* Removed Department Field */}
-          {/*
           <div>
-            <Label htmlFor="department"><Briefcase className="inline-block mr-1 h-4 w-4" />Department</Label>
+            <Label htmlFor="department"><User className="inline-block mr-1 h-4 w-4" />Department</Label>
             <Input id="department" {...register("department")} className="mt-1" placeholder="e.g., Engineering" />
             {errors.department && <p className="text-sm text-destructive mt-1">{errors.department.message}</p>}
           </div>
-          */}
 
           <div>
             <Label htmlFor="joiningDate"><CalendarIcon className="inline-block mr-1 h-4 w-4" />Joining Date</Label>

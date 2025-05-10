@@ -1,73 +1,66 @@
-
 import type { SalaryRecord } from '@/types';
 import { createRoot } from 'react-dom/client';
 
-// Dynamically import html2pdf.js only on the client-side
-async function getHtml2Pdf() {
+interface Html2PdfOptions {
+  margin?: number;
+  filename?: string;
+  image?: { type?: string; quality?: number };
+  html2canvas?: { scale?: number; useCORS?: boolean };
+  jsPDF?: { unit?: string; format?: string; orientation?: string };
+}
+
+type Html2PdfFunction = (element?: HTMLElement, options?: Html2PdfOptions) => any;
+
+async function getHtml2Pdf(): Promise<Html2PdfFunction | null> {
   if (typeof window !== 'undefined') {
-    const html2pdfModule = await import('html2pdf.js');
-    return html2pdfModule.default || html2pdfModule; // Handle default export CJS/ESM differences
+    try {
+      const html2pdfModule = await import('html2pdf.js');
+      return html2pdfModule.default || html2pdfModule;
+    } catch (error) {
+      console.error('Failed to load html2pdf:', error);
+      return null;
+    }
   }
   return null;
 }
 
-export async function generateSalarySlipPdf(record: SalaryRecord): Promise<void> {
+export async function generatePDF(record: SalaryRecord): Promise<void> {
   const html2pdf = await getHtml2Pdf();
   if (!html2pdf) {
-    console.error('html2pdf.js is not available on the server.');
-    return;
+    throw new Error('PDF generation is not available');
   }
 
-  const temporarySlipHostId = `pdf-slip-render-host-${record.id}`;
-  let temporarySlipHost = document.getElementById(temporarySlipHostId);
-  let root;
+  const element = document.createElement('div');
+  element.innerHTML = `
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+      <h1 style="color: #333; text-align: center;">Salary Slip</h1>
+      <div style="margin-top: 20px;">
+        <p><strong>Worker ID:</strong> ${record.id}</p>
+        <p><strong>Name:</strong> ${record.workerName}</p>
+        <p><strong>Department:</strong> ${record.department}</p>
+        <p><strong>Month:</strong> ${record.salaryMonthYear}</p>
+        <p><strong>Basic Salary:</strong> ${record.basicSalary}</p>
+        <p><strong>Advance Payment:</strong> ${record.advancePayment}</p>
+        <p><strong>Pending Balance:</strong> ${record.pendingBalance}</p>
+      </div>
+    </div>
+  `;
 
-  if (!temporarySlipHost) {
-    temporarySlipHost = document.createElement('div');
-    temporarySlipHost.id = temporarySlipHostId;
-    temporarySlipHost.style.position = 'absolute';
-    temporarySlipHost.style.left = '-9999px';
-    temporarySlipHost.style.top = '-9999px';
-    // Ensure A4-like dimensions for better layouting by html2pdf
-    temporarySlipHost.style.width = '210mm'; 
-    temporarySlipHost.style.minHeight = '297mm'; // Optional, helps if content is short
-    document.body.appendChild(temporarySlipHost);
-  }
-  
-  root = createRoot(temporarySlipHost);
-
-  // Wrap render in a promise to await its "completion" using a timeout
-  await new Promise<void>((resolve) => {
-    root.render(<SalarySlipTemplate record={record} />);
-    // Timeout to allow React to render and DOM to update.
-    // For complex components or those with async operations, a more robust signal might be needed.
-    setTimeout(resolve, 200); 
-  });
-
-
-  const opt = {
-    margin: [0.5, 0.3, 0.5, 0.3], // [top, left, bottom, right] in inches
-    filename: `SalarySlip_${record.workerName.replace(/\s/g, '_')}_${record.salaryMonthYear}.pdf`,
+  const options: Html2PdfOptions = {
+    margin: 1,
+    filename: `salary-slip-${record.id}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
+    html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
   };
 
   try {
-    // Use the temporary host div that now contains the rendered SalarySlipTemplate
-    await html2pdf().from(temporarySlipHost.firstChild).set(opt).save();
+    await html2pdf().set(options).from(element).save();
   } catch (error) {
-    console.error("Error generating PDF:", error);
-  } finally {
-    if (root) {
-      root.unmount();
-    }
-    if (temporarySlipHost && temporarySlipHost.parentElement === document.body) {
-      document.body.removeChild(temporarySlipHost);
-    }
+    console.error('Failed to generate PDF:', error);
+    throw new Error('Failed to generate PDF');
   }
 }
-
 
 export function SalarySlipTemplate({ record }: { record: SalaryRecord }) {
   const advancePayment = record.advancePayment || 0;

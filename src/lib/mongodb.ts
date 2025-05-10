@@ -10,10 +10,9 @@ const options = {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
   family: 4,
-  directConnection: true,
   authSource: 'admin',
-  retryWrites: true,
-  w: 'majority'
+  retryWrites: true
+  // writeConcern: { w: 'majority' } // Uncomment if you really need it and fix the type
 };
 
 let client: MongoClient;
