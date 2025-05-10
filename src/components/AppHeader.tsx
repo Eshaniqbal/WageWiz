@@ -18,11 +18,11 @@ const AppHeader: FC<AppHeaderProps> = ({ onAddEntry }) => {
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-crimson" />
             <Input placeholder="Search records..." className="pl-8 text-crimson placeholder:text-crimson/70" />
           </div>
-          <Button variant="outline" size="sm" className="text-crimson border-crimson hover:bg-crimson/10">
+          <Button className="text-crimson border-crimson hover:bg-crimson/10" variant="ghost">
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button variant="outline" size="sm" className="text-crimson border-crimson hover:bg-crimson/10">
+          <Button className="text-crimson border-crimson hover:bg-crimson/10" variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>

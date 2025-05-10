@@ -28,7 +28,6 @@ import type { SalaryRecord } from "@/types";
 type FormData = {
   workerId: string;
   workerName: string;
-  department: string;
   joiningDate: Date;
   salaryMonthYear: string;
   basicSalary: number;
@@ -39,14 +38,13 @@ type FormData = {
 const formSchema = z.object({
   workerId: z.string().min(1, 'Worker ID is required'),
   workerName: z.string().min(1, 'Worker name is required'),
-  department: z.string().min(1, 'Department is required'),
   joiningDate: z.date({
     required_error: 'Joining date is required',
   }),
   salaryMonthYear: z.string().min(1, 'Salary month/year is required'),
-  basicSalary: z.number().min(0, 'Basic salary must be positive'),
-  advancePayment: z.number().min(0, 'Advance payment must be positive'),
-  pendingBalance: z.number().min(0, 'Pending balance must be positive'),
+  basicSalary: z.coerce.number().min(0, 'Basic salary must be positive'),
+  advancePayment: z.coerce.number().min(0, 'Advance payment must be positive'),
+  pendingBalance: z.coerce.number().min(0, 'Pending balance must be positive'),
 });
 
 interface WorkerSalaryDialogProps {
@@ -61,9 +59,10 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
     resolver: zodResolver(formSchema),
     defaultValues: existingRecord
       ? {
-          // Spread existing record, department will be ignored if not in FormData
-          ...existingRecord, 
+          workerId: existingRecord.workerId,
+          workerName: existingRecord.workerName,
           joiningDate: new Date(existingRecord.joiningDate),
+          salaryMonthYear: existingRecord.salaryMonthYear,
           basicSalary: Number(existingRecord.basicSalary),
           advancePayment: Number(existingRecord.advancePayment || 0),
           pendingBalance: Number(existingRecord.pendingBalance || 0),
@@ -71,9 +70,8 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
       : {
           workerId: "",
           workerName: "",
-          department: "",
           joiningDate: undefined,
-          salaryMonthYear: format(new Date(), 'yyyy-MM'), // Default to current month
+          salaryMonthYear: format(new Date(), 'yyyy-MM'),
           basicSalary: 0,
           advancePayment: 0,
           pendingBalance: 0,
@@ -96,7 +94,6 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
         : {
             workerId: "",
             workerName: "",
-            department: "",
             joiningDate: undefined,
             salaryMonthYear: format(new Date(), 'yyyy-MM'),
             basicSalary: 0,
@@ -113,12 +110,12 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
       id: existingRecord?.id || uuidv4(),
       workerId: data.workerId,
       workerName: data.workerName,
-      department: data.department,
+      department: 'General', // Default department
       joiningDate: format(data.joiningDate, 'yyyy-MM-dd'),
       salaryMonthYear: format(data.salaryMonthYear, 'yyyy-MM'),
-      basicSalary: data.basicSalary,
-      advancePayment: data.advancePayment,
-      pendingBalance: data.pendingBalance,
+      basicSalary: Number(data.basicSalary),
+      advancePayment: Number(data.advancePayment),
+      pendingBalance: Number(data.pendingBalance),
       createdAt: existingRecord?.createdAt || now,
       updatedAt: now,
     };
@@ -149,12 +146,6 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
               <Input id="workerName" {...register("workerName")} className="mt-1" placeholder="e.g., John Doe" />
               {errors.workerName && <p className="text-sm text-destructive mt-1">{errors.workerName.message}</p>}
             </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="department"><User className="inline-block mr-1 h-4 w-4" />Department</Label>
-            <Input id="department" {...register("department")} className="mt-1" placeholder="e.g., Engineering" />
-            {errors.department && <p className="text-sm text-destructive mt-1">{errors.department.message}</p>}
           </div>
 
           <div>
@@ -192,7 +183,7 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
             </div>
             <div>
               <Label htmlFor="basicSalary"><IndianRupee className="inline-block mr-1 h-4 w-4" />Basic Salary (₹)</Label>
-              <Input id="basicSalary" type="number" step="0.01" {...register("basicSalary")} className="mt-1" placeholder="e.g., 50000" />
+              <Input id="basicSalary" type="number" step="0.01" {...register("basicSalary", { valueAsNumber: true })} className="mt-1" placeholder="e.g., 50000" />
               {errors.basicSalary && <p className="text-sm text-destructive mt-1">{errors.basicSalary.message}</p>}
             </div>
           </div>
@@ -200,12 +191,12 @@ const WorkerSalaryDialog: FC<WorkerSalaryDialogProps> = ({ isOpen, onClose, onSa
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="advancePayment"><MinusCircle className="inline-block mr-1 h-4 w-4 text-orange-500" />Advance Payment (₹)</Label>
-              <Input id="advancePayment" type="number" step="0.01" {...register("advancePayment")} className="mt-1" placeholder="e.g., 5000" />
+              <Input id="advancePayment" type="number" step="0.01" {...register("advancePayment", { valueAsNumber: true })} className="mt-1" placeholder="e.g., 5000" />
               {errors.advancePayment && <p className="text-sm text-destructive mt-1">{errors.advancePayment.message}</p>}
             </div>
             <div>
               <Label htmlFor="pendingBalance"><PlusCircle className="inline-block mr-1 h-4 w-4 text-red-500" />Pending Balance (₹)</Label>
-              <Input id="pendingBalance" type="number" step="0.01" {...register("pendingBalance")} className="mt-1" placeholder="e.g., 1000" />
+              <Input id="pendingBalance" type="number" step="0.01" {...register("pendingBalance", { valueAsNumber: true })} className="mt-1" placeholder="e.g., 1000" />
               {errors.pendingBalance && <p className="text-sm text-destructive mt-1">{errors.pendingBalance.message}</p>}
             </div>
           </div>

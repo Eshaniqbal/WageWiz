@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import type { SalaryRecord } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Download, BarChart3, DollarSign, Users, TrendingUp } from 'lucide-react';
-import type { SalaryRecord } from '@/types';
 import {
   BarChart,
   Bar,
