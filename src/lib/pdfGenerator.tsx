@@ -3,10 +3,15 @@ import { createRoot } from 'react-dom/client';
 import { SalarySlipTemplate } from './SalarySlipTemplate';
 
 interface Html2PdfOptions {
-  margin?: number;
+  margin?: number | number[];
   filename?: string;
   image?: { type?: string; quality?: number };
-  html2canvas?: { scale?: number; useCORS?: boolean };
+  html2canvas?: { 
+    scale?: number; 
+    useCORS?: boolean;
+    logging?: boolean;
+    letterRendering?: boolean;
+  };
   jsPDF?: { unit?: string; format?: string; orientation?: string };
 }
 
